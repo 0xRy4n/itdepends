@@ -1,7 +1,7 @@
 [project]
 name = "itdepends"
 version = "0.1.0"
-description = "Add your description here"
+description = "It counts when you say it depends"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
