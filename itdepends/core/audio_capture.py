@@ -185,15 +185,14 @@ def mix_audio_streams(
 
 
 class AudioCapture:
-    """Audio capture using the EXACT same approach as test_dual_recording.py."""
+    """Audio capture with dual-stream recording and mixing."""
 
     def __init__(self, config: AudioConfig, transcriber=None):
-        """Initialize audio capture with the same approach as test_dual_recording.py."""
+        """Initialize audio capture."""
         self.config = config
         self._transcriber = transcriber
         self._running = False
 
-        # Audio devices - EXACTLY like test_dual_recording.py
         self._default_speaker = None
         self._default_mic = None
         self._system_mic = None
@@ -202,19 +201,18 @@ class AudioCapture:
         self._mixed_buffer = bytearray()
         self._mixed_buffer_lock = threading.Lock()
 
-        # Initialize devices EXACTLY like test_dual_recording.py
         self._initialize_devices()
 
         # Start continuous capture thread
         self._capture_thread = None
 
     def _initialize_devices(self):
-        """Initialize devices EXACTLY like test_dual_recording.py."""
-        # Get devices - EXACTLY the same as test_dual_recording.py
+        """Initialize audio devices."""
+        # Get default devices
         self._default_speaker = sc.default_speaker()
         self._default_mic = sc.default_microphone()
 
-        # Find system audio loopback - EXACTLY the same as test_dual_recording.py
+        # Find system audio loopback
         mics = sc.all_microphones(include_loopback=True)
         self._system_mic = None
 
@@ -227,8 +225,8 @@ class AudioCapture:
                 continue
 
     def _record_and_mix_chunk(self):
-        """Record and mix a chunk using EXACTLY the same approach as test_dual_recording.py."""
-        # Shared variables for thread communication - EXACTLY like test_dual_recording.py
+        """Record and mix a chunk from both audio sources."""
+        # Shared variables for thread communication
         mic_audio_result = [None, False]
         system_audio_result = [None, False]
 
@@ -250,35 +248,33 @@ class AudioCapture:
             system_audio_result[0] = audio_data
             system_audio_result[1] = success
 
-        # Create threads for simultaneous recording - EXACTLY like test_dual_recording.py
+        # Create threads for simultaneous recording
         mic_thread = threading.Thread(target=record_mic)
         system_thread = threading.Thread(target=record_system)
 
-        # Start both recordings - EXACTLY like test_dual_recording.py
+        # Start both recordings
         mic_thread.start()
         system_thread.start()
 
-        # Wait for both to complete - EXACTLY like test_dual_recording.py
+        # Wait for both to complete
         mic_thread.join()
         system_thread.join()
 
-        # Get the recorded audio data - EXACTLY like test_dual_recording.py
+        # Get the recorded audio data
         mic_audio, mic_success = mic_audio_result
         system_audio, system_success = system_audio_result
 
         if not mic_success and not system_success:
             return None
 
-        # Normalize individual audio levels - EXACTLY like test_dual_recording.py
+        # Apply crossfade to individual audio streams
         if mic_success and len(mic_audio) > 0:
-            # mic_audio = normalize_audio_level(mic_audio, target_rms=0.15)
             mic_audio = apply_crossfade(mic_audio, self.config.sample_rate)
 
         if system_success and len(system_audio) > 0:
-            # system_audio = normalize_audio_level(system_audio, target_rms=0.12)  # Slightly lower for system audio
             system_audio = apply_crossfade(system_audio, self.config.sample_rate)
 
-        # Mix the audio streams in memory - EXACTLY like test_dual_recording.py
+        # Mix the audio streams
         mixed_audio = mix_audio_streams(
             mic_audio if mic_success else np.array([]),
             system_audio if system_success else np.array([]),
@@ -287,7 +283,7 @@ class AudioCapture:
         )
 
         if len(mixed_audio) > 0:
-            # Apply final crossfade for clean start/end - EXACTLY like test_dual_recording.py
+            # Apply final crossfade for clean start/end
             mixed_audio = apply_crossfade(
                 mixed_audio, self.config.sample_rate, fade_duration_ms=5.0
             )
@@ -296,10 +292,10 @@ class AudioCapture:
             return None
 
     def _continuous_capture(self):
-        """Continuous capture loop that uses the EXACT same recording and mixing approach."""
+        """Continuous capture loop."""
         while self._running:
             try:
-                # Record and mix a chunk using EXACTLY the same approach
+                # Record and mix a chunk
                 mixed_audio = self._record_and_mix_chunk()
 
                 if mixed_audio is not None and len(mixed_audio) > 0:
@@ -342,7 +338,7 @@ class AudioCapture:
             pass
 
     def start(self) -> None:
-        """ Start audio capture. """
+        """Start audio capture."""
         if not self._running:
             self._running = True
 
