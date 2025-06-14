@@ -1,10 +1,8 @@
-"""Audio capture using soundcard with the EXACT same approach as test_dual_recording.py."""
-
 import soundcard as sc
 import numpy as np
 import threading
 import time
-from typing import Optional, Tuple
+from typing import Tuple
 from dataclasses import dataclass
 
 
@@ -344,7 +342,7 @@ class AudioCapture:
             pass
 
     def start(self) -> None:
-        """Start audio capture using the EXACT same approach as test_dual_recording.py."""
+        """ Start audio capture. """
         if not self._running:
             self._running = True
 
